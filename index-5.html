@@ -260,7 +260,7 @@ let cloudEvents = []; // ערבים נוספים מה-cloud
 async function loadFromCloud() {
   setSyncStatus('loading', 'מתחבר לענן...');
   try {
-    const res = await fetch(BIN_URL + '/latest', { headers: { 'X-Master-Key': API_KEY } });
+    const res = await fetch(BIN_URL + '/latest', { headers: { 'X-Master-Key': API_KEY, 'X-Bin-Private': 'false' } });
     if (!res.ok) throw new Error();
     const data = await res.json();
     cloudEvents = data.record?.events || [];
