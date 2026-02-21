@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ערב קבוצוש 🦆</title>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;700;900&family=Secular+One&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#0f0e17; --surface:#1a1929; --card:#22213a;
+    --accent:#ff6b35; --accent2:#f7c59f;
+    --gold:#ffd166; --green:#06d6a0; --red:#ef476f;
+    --text:#fffffe; --muted:#a7a9be; --border:#2e2d4a;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Heebo',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+  body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse at 20% 20%,rgba(255,107,53,.08) 0%,transparent 60%),radial-gradient(ellipse at 80% 80%,rgba(6,214,160,.06) 0%,transparent 60%);pointer-events:none;z-index:0}
+  .container{max-width:980px;margin:0 auto;padding:24px 20px;position:relative;z-index:1}
+
+  header{text-align:center;margin-bottom:30px;animation:fadeDown .6s ease}
+  .logo{font-family:'Secular One',sans-serif;font-size:clamp(2.2rem,8vw,4rem);color:var(--accent);letter-spacing:-1px;line-height:1;text-shadow:0 0 40px rgba(255,107,53,.4);display:flex;align-items:center;justify-content:center;gap:12px}
+  .logo span{color:var(--gold)}
+  .subtitle{color:var(--muted);font-size:.9rem;margin-top:6px;font-weight:300}
+  .year-badge{display:inline-block;background:rgba(255,209,102,.12);border:1px solid rgba(255,209,102,.3);color:var(--gold);padding:3px 14px;border-radius:20px;font-size:.8rem;font-weight:700;margin-top:8px}
+
+  .tabs{display:flex;gap:5px;margin-bottom:24px;background:var(--surface);padding:5px;border-radius:14px;border:1px solid var(--border)}
+  .tab{flex:1;padding:9px 8px;border-radius:10px;border:none;background:transparent;color:var(--muted);font-family:'Heebo',sans-serif;font-size:.8rem;font-weight:700;cursor:pointer;transition:all .2s}
+  .tab.active{background:var(--accent);color:white;box-shadow:0 4px 14px rgba(255,107,53,.3)}
+  .tab:hover:not(.active){color:var(--text);background:var(--border)}
+  .section{display:none;animation:fadeIn .3s ease}
+  .section.active{display:block}
+
+  .stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:22px}
+  .stat-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;text-align:center;position:relative;overflow:hidden}
+  .stat-card::before{content:'';position:absolute;top:0;right:0;width:46px;height:46px;background:var(--c,var(--accent));opacity:.1;border-radius:0 0 0 46px}
+  .stat-value{font-family:'Secular One',sans-serif;font-size:2rem;color:var(--c,var(--accent));line-height:1}
+  .stat-label{font-size:.68rem;color:var(--muted);margin-top:4px;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+
+  .section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+  .section-title{font-family:'Secular One',sans-serif;font-size:1.2rem;color:var(--accent2)}
+  .count-badge{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:4px 12px;font-size:.78rem;font-weight:700;color:var(--muted)}
+
+  .event-item{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px 16px;margin-bottom:8px;display:flex;align-items:flex-start;gap:12px;transition:border-color .2s;animation:fadeUp .4s ease both}
+  .event-item:hover{border-color:var(--accent)}
+  .event-date-box{background:var(--accent);color:white;border-radius:10px;padding:7px 9px;text-align:center;min-width:48px;flex-shrink:0}
+  .event-date-box .day{font-family:'Secular One',sans-serif;font-size:1.2rem;line-height:1}
+  .event-date-box .month{font-size:.58rem;font-weight:700;text-transform:uppercase}
+  .event-info{flex:1;min-width:0}
+  .event-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px}
+  .event-host-name{font-weight:700;font-size:.92rem}
+  .host-badge{display:inline-flex;align-items:center;background:rgba(255,209,102,.12);border:1px solid rgba(255,209,102,.3);color:var(--gold);padding:2px 8px;border-radius:20px;font-size:.68rem;font-weight:700}
+  .event-note{font-size:.74rem;color:var(--muted);font-style:italic;margin-bottom:6px}
+  .chips{display:flex;flex-wrap:wrap;gap:4px}
+  .chip{font-size:.68rem;padding:2px 8px;border-radius:20px;font-weight:700}
+  .chip-p{background:rgba(6,214,160,.1);border:1px solid rgba(6,214,160,.2);color:var(--green)}
+  .chip-a{background:rgba(167,169,190,.06);border:1px solid rgba(167,169,190,.1);color:var(--muted);text-decoration:line-through}
+  .event-count{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:3px 10px;font-size:.75rem;font-weight:700;color:var(--muted);white-space:nowrap;flex-shrink:0}
+  .toggle-btn{background:transparent;border:1px solid var(--border);color:var(--muted);font-family:'Heebo',sans-serif;font-size:.7rem;padding:2px 8px;border-radius:7px;cursor:pointer;transition:all .2s;margin-top:5px}
+  .toggle-btn:hover{border-color:var(--accent);color:var(--accent)}
+
+  .lb-item{background:var(--card);border:1px solid var(--border);border-radius:13px;padding:12px 15px;margin-bottom:7px;display:flex;align-items:center;gap:12px;animation:fadeUp .4s ease both;transition:all .2s}
+  .lb-item:hover{border-color:var(--accent);transform:translateX(-3px)}
+  .rank{font-family:'Secular One',sans-serif;font-size:1.3rem;color:var(--muted);min-width:32px;text-align:center}
+  .rank.g{color:var(--gold)}.rank.s{color:#c0c0c0}.rank.b{color:#cd7f32}
+  .lb-name{flex:1;font-weight:700;font-size:.95rem}
+  .progress-bar{height:5px;background:var(--border);border-radius:3px;margin-top:4px;overflow:hidden}
+  .progress-fill{height:100%;border-radius:3px;transition:width 1s ease}
+  .lb-stat{text-align:left}
+  .lb-count{font-size:.85rem;font-weight:700}
+  .lb-pct{font-size:.68rem;color:var(--muted)}
+
+  .note-item{background:var(--surface);border-right:3px solid var(--accent);border-radius:0 10px 10px 0;padding:10px 14px;margin-bottom:8px;animation:fadeUp .4s ease both}
+  .note-date{font-size:.7rem;color:var(--accent2);font-weight:700;margin-bottom:3px}
+
+  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(6px);z-index:100;display:flex;align-items:center;justify-content:center;animation:fadeIn .2s ease}
+  .modal{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:32px;width:min(440px,90vw);text-align:center}
+  .modal h2{font-family:'Secular One',sans-serif;font-size:1.5rem;color:var(--accent);margin-bottom:6px}
+  .modal p{color:var(--muted);font-size:.85rem;margin-bottom:20px}
+  .modal input{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 16px;color:var(--text);font-family:'Heebo',sans-serif;font-size:1rem;outline:none;text-align:center;letter-spacing:3px;margin-bottom:14px}
+  .modal input:focus{border-color:var(--accent)}
+  .modal-err{color:var(--red);font-size:.8rem;margin-bottom:10px;min-height:18px}
+  .btn-row{display:flex;gap:10px}
+  .btn{padding:11px 20px;border-radius:11px;border:none;font-family:'Heebo',sans-serif;font-size:.9rem;font-weight:700;cursor:pointer;transition:all .2s;flex:1}
+  .btn-primary{background:var(--accent);color:white;box-shadow:0 4px 16px rgba(255,107,53,.3)}
+  .btn-primary:hover{transform:translateY(-1px)}
+  .btn-ghost{background:var(--surface);color:var(--muted);border:1px solid var(--border)}
+  .btn-ghost:hover{color:var(--text)}
+
+  .admin-bar{display:flex;align-items:center;justify-content:space-between;background:rgba(255,209,102,.07);border:1px solid rgba(255,209,102,.2);border-radius:10px;padding:8px 14px;margin-bottom:20px;font-size:.8rem}
+  .admin-bar span{color:var(--gold);font-weight:700}
+  .admin-bar button{background:transparent;border:none;color:var(--muted);cursor:pointer;font-size:.78rem;font-family:'Heebo',sans-serif}
+
+  .form-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:22px;margin-bottom:16px}
+  .form-card h3{font-family:'Secular One',sans-serif;color:var(--accent2);margin-bottom:16px;font-size:1.1rem}
+  .form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+  @media(max-width:560px){.form-row{grid-template-columns:1fr}}
+  .form-group{display:flex;flex-direction:column;gap:5px}
+  label{font-size:.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+  input[type=date],input[type=text],select,textarea{background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:9px 13px;color:var(--text);font-family:'Heebo',sans-serif;font-size:.9rem;outline:none;transition:border-color .2s;width:100%}
+  input:focus,select:focus,textarea:focus{border-color:var(--accent)}
+  textarea{resize:vertical;min-height:60px}
+  .members-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(105px,1fr));gap:7px;margin-bottom:16px}
+  .member-toggle{background:var(--surface);border:2px solid var(--border);border-radius:10px;padding:8px;cursor:pointer;text-align:center;transition:all .2s;color:var(--muted);font-size:.82rem;font-weight:700;user-select:none;position:relative}
+  .member-toggle:hover{border-color:var(--accent);color:var(--text)}
+  .member-toggle.on{background:rgba(6,214,160,.1);border-color:var(--green);color:var(--green)}
+  .member-toggle.on::after{content:'✓';position:absolute;top:4px;left:6px;font-size:.65rem;color:var(--green)}
+  .sel-row{display:flex;gap:8px;margin-bottom:12px}
+  .btn-sm{padding:5px 12px;font-size:.75rem;border-radius:7px;background:transparent;border:1px solid var(--border);color:var(--muted);cursor:pointer;font-family:'Heebo',sans-serif;font-weight:700;transition:all .2s}
+  .btn-sm:hover{border-color:var(--accent);color:var(--accent)}
+  .btn-danger-sm{background:rgba(239,71,111,.1);color:var(--red);border:1px solid rgba(239,71,111,.25);padding:10px;border-radius:10px;width:100%;font-family:'Heebo',sans-serif;font-weight:700;font-size:.88rem;cursor:pointer;transition:all .2s}
+  .btn-danger-sm:hover{background:rgba(239,71,111,.2)}
+
+  /* Sync indicator */
+  .sync-bar{display:flex;align-items:center;gap:8px;background:rgba(6,214,160,.06);border:1px solid rgba(6,214,160,.15);border-radius:10px;padding:7px 14px;margin-bottom:18px;font-size:.78rem;color:var(--muted)}
+  .sync-dot{width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0;animation:pulse 2s infinite}
+  .sync-dot.loading{background:var(--gold);animation:spin 1s linear infinite;border-radius:0;clip-path:polygon(50% 0%,100% 100%,0% 100%)}
+  .sync-dot.err{background:var(--red);animation:none}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  .empty{text-align:center;padding:50px 20px;color:var(--muted)}
+  .empty-icon{font-size:2.6rem;margin-bottom:10px}
+  .empty-text{font-size:.95rem;font-weight:700}
+
+  .toast{position:fixed;bottom:24px;right:24px;background:var(--green);color:#0f0e17;padding:10px 20px;border-radius:12px;font-weight:700;font-size:.85rem;z-index:200;transform:translateY(100px);opacity:0;transition:all .3s cubic-bezier(.34,1.56,.64,1);pointer-events:none}
+  .toast.show{transform:translateY(0);opacity:1}
+  .toast.err{background:var(--red);color:white}
+
+  @keyframes fadeDown{from{opacity:0;transform:translateY(-20px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div class="logo">ערב <span>קבוצוש</span>
+      <svg width="60" height="60" viewBox="0 0 100 100" style="vertical-align:middle;margin-right:4px" xmlns="http://www.w3.org/2000/svg">
+        <ellipse cx="50" cy="67" rx="34" ry="26" fill="#FFD700"/>
+        <circle cx="73" cy="38" r="18" fill="#FFD700"/>
+        <circle cx="79" cy="33" r="3.5" fill="#1a1a2e"/>
+        <circle cx="80" cy="32" r="1" fill="white"/>
+        <ellipse cx="92" cy="40" rx="9" ry="5" fill="#FF8C00"/>
+        <line x1="83" y1="40" x2="101" y2="40" stroke="#e07000" stroke-width="1.2"/>
+        <ellipse cx="40" cy="70" rx="18" ry="10" fill="#FFC200" transform="rotate(-15 40 70)"/>
+        <ellipse cx="50" cy="90" rx="30" ry="5" fill="rgba(6,214,160,0.2)"/>
+      </svg>
+    </div>
+    <p class="subtitle">המעקב הרשמי של החבורה</p>
+    <div class="year-badge">✨ עונת 2026</div>
+  </header>
+
+  <div class="sync-bar" id="sync-bar">
+    <div class="sync-dot loading" id="sync-dot"></div>
+    <span id="sync-text">מתחבר לענן...</span>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('events')">📅 ערבים</button>
+    <button class="tab" onclick="switchTab('attendance')">🏆 נוכחות</button>
+    <button class="tab" onclick="switchTab('hosting')">🏠 אירוח</button>
+    <button class="tab" onclick="switchTab('notes')">💬 ציטוטים</button>
+    <button class="tab" onclick="openAdmin()">✏️ עריכה</button>
+  </div>
+
+  <div class="section active" id="section-events">
+    <div class="stats-row" id="stats-row"></div>
+    <div class="section-header">
+      <div class="section-title">ערבי 2026</div>
+      <div id="events-count" class="count-badge"></div>
+    </div>
+    <div id="events-list"><div class="empty"><div class="empty-icon">⏳</div><div class="empty-text">טוען נתונים...</div></div></div>
+  </div>
+
+  <div class="section" id="section-attendance">
+    <div class="section-title" style="margin-bottom:16px">🏆 דירוג נוכחות — 2026</div>
+    <div id="attendance-lb"></div>
+  </div>
+
+  <div class="section" id="section-hosting">
+    <div class="section-title" style="margin-bottom:16px">🏠 דירוג אירוח — 2026</div>
+    <div id="hosting-lb"></div>
+  </div>
+
+  <div class="section" id="section-notes">
+    <div class="section-title" style="margin-bottom:16px">💬 ציטוטים — 2026</div>
+    <div id="notes-list"></div>
+  </div>
+
+  <div class="section" id="section-admin">
+    <div class="admin-bar">
+      <span>🔓 מצב עריכה פעיל</span>
+      <button onclick="lockAdmin()">נעל 🔒</button>
+    </div>
+    <div class="form-card">
+      <h3>➕ הוסף ערב חדש</h3>
+      <div class="form-row">
+        <div class="form-group"><label>תאריך</label><input type="date" id="new-date"></div>
+        <div class="form-group"><label>מארח</label>
+          <select id="new-host"><option value="">— ללא מארח —</option></select>
+        </div>
+      </div>
+      <div class="form-group" style="margin-bottom:12px"><label>הערה / ציטוט</label><textarea id="new-note" placeholder="משהו מצחיק שקרה..."></textarea></div>
+      <label style="display:block;margin-bottom:8px">מי הגיע?</label>
+      <div class="sel-row">
+        <button class="btn-sm" onclick="selectAll(true)">סמן הכל</button>
+        <button class="btn-sm" onclick="selectAll(false)">נקה הכל</button>
+      </div>
+      <div class="members-grid" id="members-grid"></div>
+      <button class="btn btn-primary" style="width:100%;padding:13px" onclick="addEvent()">💾 שמור ערב</button>
+    </div>
+    <div class="form-card">
+      <h3 style="margin-bottom:12px">🗑️ מחיקת ערב</h3>
+      <button class="btn-danger-sm" onclick="deleteLastEvent()">מחק את הערב האחרון שנוסף</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal" style="display:none">
+  <div class="modal">
+    <h2>🔒 כניסת מנהל</h2>
+    <p>הכנס סיסמה כדי לערוך נתונים</p>
+    <input type="password" id="pwd-input" placeholder="••••••" onkeydown="if(event.key==='Enter')checkPwd()">
+    <div class="modal-err" id="pwd-err"></div>
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="closeModal()">ביטול</button>
+      <button class="btn btn-primary" onclick="checkPwd()">כניסה</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── Config ──────────────────────────────────────
+const ADMIN_PASSWORD = 'Meira123';
+const BIN_ID = '6999a40c43b1c97be9910307';
+const API_KEY = '$2a$10$GkPzQeDGvYvBfUxs8pCcEO9vsEePbsjWxeo8xBxyoszIkm26myQ8a';
+const BIN_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
+const HEADERS = { 'Content-Type': 'application/json', 'X-Master-Key': API_KEY };
+
+const ALL_MEMBERS = ['אורקי','שחר','חובב','אסא','אביב','בוכנר','צייני','אלון','גיא','רם','יובי'];
+
+// נתוני בסיס 2026 — תמיד קיימים
+const SEED_EVENTS = [
+  {id:'26s1',date:'2026-01-06',host:'',present:['צייני','שחר','חובב','אסא','אלון'],note:'טופ שחקנים בתולדות ההיסטוריה של המדינה'},
+  {id:'26s2',date:'2026-01-13',host:'חובב',present:['אורקי','צייני','שחר','אביב','חובב','בוכנר','גיא','יובי'],note:''},
+  {id:'26s3',date:'2026-01-21',host:'אביב',present:['אורקי','צייני','שחר','אביב','חובב','אלון','בוכנר','יובי'],note:'לחיות או לחדול'},
+  {id:'26s4',date:'2026-01-27',host:'אורקי',present:['אורקי','צייני','שחר','חובב','אסא','בוכנר','רם','יובי'],note:'כששחר מדבר על סיגל משהו ניצץ לו בעיניים'},
+  {id:'26s5',date:'2026-02-02',host:'',present:['צייני','שחר','חובב','אסא','גיא','רם'],note:''},
+  {id:'26s6',date:'2026-02-10',host:'אסא',present:['צייני','שחר','חובב','אסא','אלון','יובי'],note:''},
+  {id:'26s7',date:'2026-02-17',host:'שחר',present:['שחר','אביב','חובב','אסא','אלון','בוכנר','יובי'],note:''},
+];
+
+// ── State ───────────────────────────────────────
+let isAdmin = false;
+let cloudEvents = []; // ערבים נוספים מה-cloud
+
+// ── JSONBin API ─────────────────────────────────
+async function loadFromCloud() {
+  setSyncStatus('loading', 'מתחבר לענן...');
+  try {
+    const res = await fetch(BIN_URL + '/latest', { headers: { 'X-Master-Key': API_KEY } });
+    if (!res.ok) throw new Error();
+    const data = await res.json();
+    cloudEvents = data.record?.events || [];
+    setSyncStatus('ok', `מסונכרן ✓ — ${getAllEvents().length} ערבים`);
+    renderAll();
+  } catch(e) {
+    setSyncStatus('err', 'שגיאת חיבור — מציג נתוני בסיס');
+    cloudEvents = [];
+    renderAll();
+  }
+}
+
+async function saveToCloud(events) {
+  setSyncStatus('loading', 'שומר...');
+  try {
+    const res = await fetch(BIN_URL, {
+      method: 'PUT',
+      headers: HEADERS,
+      body: JSON.stringify({ events })
+    });
+    if (!res.ok) throw new Error();
+    setSyncStatus('ok', `מסונכרן ✓ — ${getAllEvents().length} ערבים`);
+    showToast('✅ נשמר ומסונכרן לכולם!');
+  } catch(e) {
+    setSyncStatus('err', 'שגיאה בשמירה');
+    showToast('❌ שגיאה בשמירה', true);
+  }
+}
+
+function setSyncStatus(type, text) {
+  const dot = document.getElementById('sync-dot');
+  const txt = document.getElementById('sync-text');
+  dot.className = 'sync-dot' + (type==='loading'?' loading':type==='err'?' err':'');
+  txt.textContent = text;
+}
+
+// ── Data ────────────────────────────────────────
+function getAllEvents() {
+  const all = [...SEED_EVENTS, ...cloudEvents];
+  return all.sort((a,b) => new Date(b.date)-new Date(a.date));
+}
+
+// ── Render ──────────────────────────────────────
+function renderAll() {
+  const events = getAllEvents();
+  renderStats(events);
+  renderEvents(events);
+  renderLb(events,'attendance');
+  renderLb(events,'hosting');
+  renderNotes(events);
+}
+
+function renderStats(events) {
+  const total = events.length;
+  const avg = total ? (events.reduce((s,e)=>s+e.present.length,0)/total).toFixed(1) : 0;
+  const hosts = new Set(events.map(e=>e.host).filter(Boolean)).size;
+  const totalP = events.reduce((s,e)=>s+e.present.length,0);
+  document.getElementById('stats-row').innerHTML = `
+    <div class="stat-card" style="--c:var(--accent)"><div class="stat-value">${total}</div><div class="stat-label">ערבים</div></div>
+    <div class="stat-card" style="--c:var(--gold)"><div class="stat-value">${avg}</div><div class="stat-label">ממוצע נוכחות</div></div>
+    <div class="stat-card" style="--c:var(--green)"><div class="stat-value">${hosts}</div><div class="stat-label">מארחים שונים</div></div>
+    <div class="stat-card" style="--c:#a78bfa"><div class="stat-value">${totalP}</div><div class="stat-label">סה"כ נוכחויות</div></div>`;
+  document.getElementById('events-count').textContent = `${total} ערבים`;
+}
+
+function renderEvents(events) {
+  document.getElementById('events-list').innerHTML = events.map((ev,i) => {
+    const d = new Date(ev.date+'T00:00:00');
+    const day = d.getDate(), month = d.toLocaleDateString('he-IL',{month:'short'});
+    const absent = ALL_MEMBERS.filter(m=>!ev.present.includes(m));
+    const aid = 'a'+i;
+    return `<div class="event-item" style="animation-delay:${Math.min(i,15)*.033}s">
+      <div class="event-date-box"><div class="day">${day}</div><div class="month">${month}</div></div>
+      <div class="event-info">
+        <div class="event-top">
+          <span class="event-host-name">${ev.host||'—'}</span>
+          ${ev.host?'<span class="host-badge">🏠 מארח</span>':''}
+        </div>
+        ${ev.note?`<div class="event-note">💬 ${ev.note}</div>`:''}
+        <div class="chips">${ev.present.map(p=>`<span class="chip chip-p">${p}</span>`).join('')}</div>
+        ${absent.length?`<button class="toggle-btn" onclick="(function(b,d){d.style.display=d.style.display==='flex'?'none':'flex';b.textContent=d.style.display==='flex'?'הסתר נעדרים':'הצג נעדרים (${absent.length})'})(this,document.getElementById('${aid}'))">הצג נעדרים (${absent.length})</button>
+        <div id="${aid}" style="display:none;flex-wrap:wrap;gap:4px;margin-top:5px">${absent.map(m=>`<span class="chip chip-a">${m}</span>`).join('')}</div>`:''}
+      </div>
+      <div class="event-count">${ev.present.length}/${ALL_MEMBERS.length}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderLb(events, type) {
+  const total = events.length;
+  const key = type==='attendance'?'attendance-lb':'hosting-lb';
+  const isAtt = type==='attendance';
+  const sorted = ALL_MEMBERS.map(m=>({
+    name:m,
+    count:isAtt?events.filter(e=>e.present.includes(m)).length:events.filter(e=>e.host===m).length
+  })).sort((a,b)=>b.count-a.count);
+  const max = sorted[0]?.count||1;
+  const RE=['🥇','🥈','🥉'],RC=['g','s','b'];
+  document.getElementById(key).innerHTML = sorted.map((m,i)=>{
+    const pct=total?Math.round((m.count/total)*100):0;
+    const bc=i===0?'var(--gold)':i===1?'#c0c0c0':i===2?'#cd7f32':isAtt?'var(--accent)':'var(--green)';
+    const label=isAtt?`${m.count}/${total}`:`${m.count} פעמים`;
+    return `<div class="lb-item" style="animation-delay:${i*.04}s">
+      <div class="rank ${RC[i]||''}">${RE[i]||(i+1)}</div>
+      <div style="flex:1"><div class="lb-name">${m.name}</div>
+        <div class="progress-bar"><div class="progress-fill" style="width:${m.count?Math.round((m.count/max)*100):0}%;background:${bc}"></div></div>
+      </div>
+      <div class="lb-stat"><div class="lb-count" style="color:${bc}">${label}</div><div class="lb-pct">${pct}%</div></div>
+    </div>`;
+  }).join('');
+}
+
+function renderNotes(events) {
+  const notes = events.filter(e=>e.note);
+  document.getElementById('notes-list').innerHTML = notes.length
+    ? notes.map((e,i)=>{
+        const d=new Date(e.date+'T00:00:00');
+        const fmt=d.toLocaleDateString('he-IL',{day:'numeric',month:'long'});
+        return `<div class="note-item" style="animation-delay:${i*.04}s"><div class="note-date">${fmt} · ${e.host||'ערב ללא מארח'}</div><div>${e.note}</div></div>`;
+      }).join('')
+    : '<div class="empty"><div class="empty-icon">💬</div><div class="empty-text">אין ציטוטים עדיין</div></div>';
+}
+
+// ── Admin ───────────────────────────────────────
+function openAdmin() {
+  if(isAdmin){switchTab('admin');return;}
+  document.getElementById('modal').style.display='flex';
+  document.getElementById('pwd-input').value='';
+  document.getElementById('pwd-err').textContent='';
+  setTimeout(()=>document.getElementById('pwd-input').focus(),100);
+}
+function closeModal(){document.getElementById('modal').style.display='none';}
+function checkPwd(){
+  if(document.getElementById('pwd-input').value===ADMIN_PASSWORD){
+    isAdmin=true; closeModal(); buildAdminForm(); switchTab('admin'); showToast('✅ ברוך הבא, מנהל!');
+  } else {
+    document.getElementById('pwd-err').textContent='❌ סיסמה שגויה';
+    document.getElementById('pwd-input').value='';
+    document.getElementById('pwd-input').focus();
+  }
+}
+function lockAdmin(){isAdmin=false;switchTab('events');showToast('🔒 מצב עריכה ננעל');}
+
+function buildAdminForm(){
+  const sel=document.getElementById('new-host');
+  sel.innerHTML='<option value="">— ללא מארח —</option>';
+  ALL_MEMBERS.forEach(m=>sel.innerHTML+=`<option value="${m}">${m}</option>`);
+  document.getElementById('new-date').value=new Date().toISOString().split('T')[0];
+  document.getElementById('members-grid').innerHTML=ALL_MEMBERS.map(m=>
+    `<div class="member-toggle on" id="mt-${m}" onclick="this.classList.toggle('on')">${m}</div>`).join('');
+}
+
+function selectAll(v){
+  ALL_MEMBERS.forEach(m=>{const el=document.getElementById('mt-'+m);if(el)v?el.classList.add('on'):el.classList.remove('on');});
+}
+
+async function addEvent(){
+  const date=document.getElementById('new-date').value;
+  const host=document.getElementById('new-host').value;
+  const note=document.getElementById('new-note').value.trim();
+  if(!date){showToast('⚠️ נא לבחור תאריך',true);return;}
+  const present=ALL_MEMBERS.filter(m=>document.getElementById('mt-'+m)?.classList.contains('on'));
+  if(!present.length){showToast('⚠️ סמן לפחות חבר אחד',true);return;}
+  const ev={id:'u'+Date.now(),date,host,present,note};
+  cloudEvents.push(ev);
+  renderAll();
+  document.getElementById('new-note').value='';
+  document.getElementById('new-host').value='';
+  document.getElementById('new-date').value=new Date().toISOString().split('T')[0];
+  selectAll(true);
+  await saveToCloud(cloudEvents);
+}
+
+async function deleteLastEvent(){
+  if(!cloudEvents.length){showToast('⚠️ אין ערבים שנוספו',true);return;}
+  if(!confirm('למחוק את הערב האחרון שנוסף?'))return;
+  cloudEvents.pop();
+  renderAll();
+  await saveToCloud(cloudEvents);
+}
+
+// ── Tabs ────────────────────────────────────────
+function switchTab(t){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+  document.getElementById('section-'+t).classList.add('active');
+  ['events','attendance','hosting','notes','admin'].forEach((n,i)=>{
+    if(n===t)document.querySelectorAll('.tab')[i]?.classList.add('active');
+  });
+}
+
+// ── Toast ────────────────────────────────────────
+function showToast(msg,err=false){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.className='toast'+(err?' err':'')+' show';
+  setTimeout(()=>t.classList.remove('show'),2600);
+}
+
+// ── Init ─────────────────────────────────────────
+loadFromCloud();
+</script>
+</body>
+</html>
