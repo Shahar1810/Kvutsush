@@ -18,7 +18,7 @@
   .container{max-width:980px;margin:0 auto;padding:24px 20px;position:relative;z-index:1}
 
   header{text-align:center;margin-bottom:30px;animation:fadeDown .6s ease}
-  .logo{font-family:'Secular One',sans-serif;font-size:clamp(2.2rem,8vw,4rem);color:var(--accent);letter-spacing:-1px;line-height:1;text-shadow:0 0 40px rgba(255,107,53,.4)}
+  .logo{font-family:'Secular One',sans-serif;font-size:clamp(2.2rem,8vw,4rem);color:var(--accent);letter-spacing:-1px;line-height:1;text-shadow:0 0 40px rgba(255,107,53,.4);display:flex;align-items:center;justify-content:center;gap:12px}
   .logo span{color:var(--gold)}
   .subtitle{color:var(--muted);font-size:.9rem;margin-top:6px;font-weight:300}
   .year-badge{display:inline-block;background:rgba(255,209,102,.12);border:1px solid rgba(255,209,102,.3);color:var(--gold);padding:3px 14px;border-radius:20px;font-size:.8rem;font-weight:700;margin-top:8px}
@@ -72,7 +72,6 @@
   .note-item{background:var(--surface);border-right:3px solid var(--accent);border-radius:0 10px 10px 0;padding:10px 14px;margin-bottom:8px;animation:fadeUp .4s ease both}
   .note-date{font-size:.7rem;color:var(--accent2);font-weight:700;margin-bottom:3px}
 
-  /* Admin */
   .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(6px);z-index:100;display:flex;align-items:center;justify-content:center;animation:fadeIn .2s ease}
   .modal{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:32px;width:min(440px,90vw);text-align:center}
   .modal h2{font-family:'Secular One',sans-serif;font-size:1.5rem;color:var(--accent);margin-bottom:6px}
@@ -111,6 +110,14 @@
   .btn-danger-sm{background:rgba(239,71,111,.1);color:var(--red);border:1px solid rgba(239,71,111,.25);padding:10px;border-radius:10px;width:100%;font-family:'Heebo',sans-serif;font-weight:700;font-size:.88rem;cursor:pointer;transition:all .2s}
   .btn-danger-sm:hover{background:rgba(239,71,111,.2)}
 
+  /* Sync indicator */
+  .sync-bar{display:flex;align-items:center;gap:8px;background:rgba(6,214,160,.06);border:1px solid rgba(6,214,160,.15);border-radius:10px;padding:7px 14px;margin-bottom:18px;font-size:.78rem;color:var(--muted)}
+  .sync-dot{width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0;animation:pulse 2s infinite}
+  .sync-dot.loading{background:var(--gold);animation:spin 1s linear infinite;border-radius:0;clip-path:polygon(50% 0%,100% 100%,0% 100%)}
+  .sync-dot.err{background:var(--red);animation:none}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
   .empty{text-align:center;padding:50px 20px;color:var(--muted)}
   .empty-icon{font-size:2.6rem;margin-bottom:10px}
   .empty-text{font-size:.95rem;font-weight:700}
@@ -128,7 +135,7 @@
 <div class="container">
   <header>
     <div class="logo">ערב <span>קבוצוש</span>
-      <svg width="64" height="64" viewBox="0 0 100 100" style="vertical-align:middle;margin-right:6px" xmlns="http://www.w3.org/2000/svg">
+      <svg width="60" height="60" viewBox="0 0 100 100" style="vertical-align:middle;margin-right:4px" xmlns="http://www.w3.org/2000/svg">
         <ellipse cx="50" cy="67" rx="34" ry="26" fill="#FFD700"/>
         <circle cx="73" cy="38" r="18" fill="#FFD700"/>
         <circle cx="79" cy="33" r="3.5" fill="#1a1a2e"/>
@@ -142,6 +149,11 @@
     <p class="subtitle">המעקב הרשמי של החבורה</p>
     <div class="year-badge">✨ עונת 2026</div>
   </header>
+
+  <div class="sync-bar" id="sync-bar">
+    <div class="sync-dot loading" id="sync-dot"></div>
+    <span id="sync-text">מתחבר לענן...</span>
+  </div>
 
   <div class="tabs">
     <button class="tab active" onclick="switchTab('events')">📅 ערבים</button>
@@ -157,7 +169,7 @@
       <div class="section-title">ערבי 2026</div>
       <div id="events-count" class="count-badge"></div>
     </div>
-    <div id="events-list"></div>
+    <div id="events-list"><div class="empty"><div class="empty-icon">⏳</div><div class="empty-text">טוען נתונים...</div></div></div>
   </div>
 
   <div class="section" id="section-attendance">
@@ -198,7 +210,7 @@
       <button class="btn btn-primary" style="width:100%;padding:13px" onclick="addEvent()">💾 שמור ערב</button>
     </div>
     <div class="form-card">
-      <h3 style="margin-bottom:12px">🗑️ מחיקת ערב אחרון</h3>
+      <h3 style="margin-bottom:12px">🗑️ מחיקת ערב</h3>
       <button class="btn-danger-sm" onclick="deleteLastEvent()">מחק את הערב האחרון שנוסף</button>
     </div>
   </div>
@@ -220,34 +232,75 @@
 <div class="toast" id="toast"></div>
 
 <script>
-// ── סיסמה ──────────────────────────────────────
+// ── Config ──────────────────────────────────────
 const ADMIN_PASSWORD = 'Meira123';
+const BIN_ID = '6999a40c43b1c97be9910307';
+const API_KEY = '$2a$10$fTSJe6wX/1UhfGK3uBz.LeE4NZ0/S2vGMgAEnjav68eRMc21srzJK';
+const BIN_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
+const HEADERS = { 'Content-Type': 'application/json', 'X-Master-Key': API_KEY };
 
-// ── חברי הקבוצה ────────────────────────────────
 const ALL_MEMBERS = ['אורקי','שחר','חובב','אסא','אביב','בוכנר','צייני','אלון','גיא','רם','יובי'];
 
-// ── נתוני בסיס 2026 ─────────────────────────────
+// נתוני בסיס 2026 — תמיד קיימים
 const SEED_EVENTS = [
-  {id:'26s1', date:'2026-01-06', host:'',      present:['צייני','שחר','חובב','אסא','אלון'],                             note:'טופ שחקנים בתולדות ההיסטוריה של המדינה'},
-  {id:'26s2', date:'2026-01-13', host:'חובב',  present:['אורקי','צייני','שחר','אביב','חובב','בוכנר','גיא','יובי'],     note:''},
-  {id:'26s3', date:'2026-01-21', host:'אביב',  present:['אורקי','צייני','שחר','אביב','חובב','אלון','בוכנר','יובי'],    note:'לחיות או לחדול'},
-  {id:'26s4', date:'2026-01-27', host:'אורקי', present:['אורקי','צייני','שחר','חובב','אסא','בוכנר','רם','יובי'],       note:'כששחר מדבר על סיגל משהו ניצץ לו בעיניים'},
-  {id:'26s5', date:'2026-02-02', host:'',      present:['צייני','שחר','חובב','אסא','גיא','רם'],                         note:''},
-  {id:'26s6', date:'2026-02-10', host:'אסא',   present:['צייני','שחר','חובב','אסא','אלון','יובי'],                     note:''},
-  {id:'26s7', date:'2026-02-17', host:'שחר',   present:['שחר','אביב','חובב','אסא','אלון','בוכנר','יובי'],              note:''},
+  {id:'26s1',date:'2026-01-06',host:'',present:['צייני','שחר','חובב','אסא','אלון'],note:'טופ שחקנים בתולדות ההיסטוריה של המדינה'},
+  {id:'26s2',date:'2026-01-13',host:'חובב',present:['אורקי','צייני','שחר','אביב','חובב','בוכנר','גיא','יובי'],note:''},
+  {id:'26s3',date:'2026-01-21',host:'אביב',present:['אורקי','צייני','שחר','אביב','חובב','אלון','בוכנר','יובי'],note:'לחיות או לחדול'},
+  {id:'26s4',date:'2026-01-27',host:'אורקי',present:['אורקי','צייני','שחר','חובב','אסא','בוכנר','רם','יובי'],note:'כששחר מדבר על סיגל משהו ניצץ לו בעיניים'},
+  {id:'26s5',date:'2026-02-02',host:'',present:['צייני','שחר','חובב','אסא','גיא','רם'],note:''},
+  {id:'26s6',date:'2026-02-10',host:'אסא',present:['צייני','שחר','חובב','אסא','אלון','יובי'],note:''},
+  {id:'26s7',date:'2026-02-17',host:'שחר',present:['שחר','אביב','חובב','אסא','אלון','בוכנר','יובי'],note:''},
 ];
 
 // ── State ───────────────────────────────────────
 let isAdmin = false;
+let cloudEvents = []; // ערבים נוספים מה-cloud
 
-function getExtraEvents() {
-  try { return JSON.parse(localStorage.getItem('kvutzosh26_events') || '[]'); } catch(e) { return []; }
+// ── JSONBin API ─────────────────────────────────
+async function loadFromCloud() {
+  setSyncStatus('loading', 'מתחבר לענן...');
+  try {
+    const res = await fetch(BIN_URL + '/latest', { headers: { 'X-Master-Key': API_KEY } });
+    if (!res.ok) throw new Error();
+    const data = await res.json();
+    cloudEvents = data.record?.events || [];
+    setSyncStatus('ok', `מסונכרן ✓ — ${getAllEvents().length} ערבים`);
+    renderAll();
+  } catch(e) {
+    setSyncStatus('err', 'שגיאת חיבור — מציג נתוני בסיס');
+    cloudEvents = [];
+    renderAll();
+  }
 }
-function saveExtraEvents(arr) {
-  localStorage.setItem('kvutzosh26_events', JSON.stringify(arr));
+
+async function saveToCloud(events) {
+  setSyncStatus('loading', 'שומר...');
+  try {
+    const res = await fetch(BIN_URL, {
+      method: 'PUT',
+      headers: HEADERS,
+      body: JSON.stringify({ events })
+    });
+    if (!res.ok) throw new Error();
+    setSyncStatus('ok', `מסונכרן ✓ — ${getAllEvents().length} ערבים`);
+    showToast('✅ נשמר ומסונכרן לכולם!');
+  } catch(e) {
+    setSyncStatus('err', 'שגיאה בשמירה');
+    showToast('❌ שגיאה בשמירה', true);
+  }
 }
+
+function setSyncStatus(type, text) {
+  const dot = document.getElementById('sync-dot');
+  const txt = document.getElementById('sync-text');
+  dot.className = 'sync-dot' + (type==='loading'?' loading':type==='err'?' err':'');
+  txt.textContent = text;
+}
+
+// ── Data ────────────────────────────────────────
 function getAllEvents() {
-  return [...SEED_EVENTS, ...getExtraEvents()].sort((a,b) => new Date(b.date)-new Date(a.date));
+  const all = [...SEED_EVENTS, ...cloudEvents];
+  return all.sort((a,b) => new Date(b.date)-new Date(a.date));
 }
 
 // ── Render ──────────────────────────────────────
@@ -255,8 +308,8 @@ function renderAll() {
   const events = getAllEvents();
   renderStats(events);
   renderEvents(events);
-  renderLb(events, 'attendance');
-  renderLb(events, 'hosting');
+  renderLb(events,'attendance');
+  renderLb(events,'hosting');
   renderNotes(events);
 }
 
@@ -264,22 +317,21 @@ function renderStats(events) {
   const total = events.length;
   const avg = total ? (events.reduce((s,e)=>s+e.present.length,0)/total).toFixed(1) : 0;
   const hosts = new Set(events.map(e=>e.host).filter(Boolean)).size;
-  const totalPresences = events.reduce((s,e)=>s+e.present.length,0);
+  const totalP = events.reduce((s,e)=>s+e.present.length,0);
   document.getElementById('stats-row').innerHTML = `
     <div class="stat-card" style="--c:var(--accent)"><div class="stat-value">${total}</div><div class="stat-label">ערבים</div></div>
     <div class="stat-card" style="--c:var(--gold)"><div class="stat-value">${avg}</div><div class="stat-label">ממוצע נוכחות</div></div>
     <div class="stat-card" style="--c:var(--green)"><div class="stat-value">${hosts}</div><div class="stat-label">מארחים שונים</div></div>
-    <div class="stat-card" style="--c:#a78bfa"><div class="stat-value">${totalPresences}</div><div class="stat-label">סה"כ נוכחויות</div></div>`;
+    <div class="stat-card" style="--c:#a78bfa"><div class="stat-value">${totalP}</div><div class="stat-label">סה"כ נוכחויות</div></div>`;
   document.getElementById('events-count').textContent = `${total} ערבים`;
 }
 
 function renderEvents(events) {
   document.getElementById('events-list').innerHTML = events.map((ev,i) => {
-    const d = new Date(ev.date + 'T00:00:00');
-    const day = d.getDate();
-    const month = d.toLocaleDateString('he-IL',{month:'short'});
-    const absent = ALL_MEMBERS.filter(m => !ev.present.includes(m));
-    const aid = 'abs'+i;
+    const d = new Date(ev.date+'T00:00:00');
+    const day = d.getDate(), month = d.toLocaleDateString('he-IL',{month:'short'});
+    const absent = ALL_MEMBERS.filter(m=>!ev.present.includes(m));
+    const aid = 'a'+i;
     return `<div class="event-item" style="animation-delay:${Math.min(i,15)*.033}s">
       <div class="event-date-box"><div class="day">${day}</div><div class="month">${month}</div></div>
       <div class="event-info">
@@ -289,9 +341,8 @@ function renderEvents(events) {
         </div>
         ${ev.note?`<div class="event-note">💬 ${ev.note}</div>`:''}
         <div class="chips">${ev.present.map(p=>`<span class="chip chip-p">${p}</span>`).join('')}</div>
-        ${absent.length?`
-          <button class="toggle-btn" onclick="(function(b,d){d.style.display=d.style.display==='flex'?'none':'flex';b.textContent=d.style.display==='flex'?'הסתר נעדרים':'הצג נעדרים (${absent.length})'})(this,document.getElementById('${aid}'))">הצג נעדרים (${absent.length})</button>
-          <div id="${aid}" style="display:none;flex-wrap:wrap;gap:4px;margin-top:5px">${absent.map(m=>`<span class="chip chip-a">${m}</span>`).join('')}</div>` : ''}
+        ${absent.length?`<button class="toggle-btn" onclick="(function(b,d){d.style.display=d.style.display==='flex'?'none':'flex';b.textContent=d.style.display==='flex'?'הסתר נעדרים':'הצג נעדרים (${absent.length})'})(this,document.getElementById('${aid}'))">הצג נעדרים (${absent.length})</button>
+        <div id="${aid}" style="display:none;flex-wrap:wrap;gap:4px;margin-top:5px">${absent.map(m=>`<span class="chip chip-a">${m}</span>`).join('')}</div>`:''}
       </div>
       <div class="event-count">${ev.present.length}/${ALL_MEMBERS.length}</div>
     </div>`;
@@ -300,17 +351,18 @@ function renderEvents(events) {
 
 function renderLb(events, type) {
   const total = events.length;
-  const key = type==='attendance' ? 'attendance-lb' : 'hosting-lb';
+  const key = type==='attendance'?'attendance-lb':'hosting-lb';
   const isAtt = type==='attendance';
-  const sorted = ALL_MEMBERS
-    .map(m=>({ name:m, count: isAtt ? events.filter(e=>e.present.includes(m)).length : events.filter(e=>e.host===m).length }))
-    .sort((a,b)=>b.count-a.count);
-  const max = sorted[0]?.count || 1;
-  const RE=['🥇','🥈','🥉'], RC=['g','s','b'];
-  document.getElementById(key).innerHTML = sorted.map((m,i) => {
-    const pct = total ? Math.round((m.count/total)*100) : 0;
-    const bc = i===0?'var(--gold)':i===1?'#c0c0c0':i===2?'#cd7f32':isAtt?'var(--accent)':'var(--green)';
-    const label = isAtt ? `${m.count}/${total}` : `${m.count} פעמים`;
+  const sorted = ALL_MEMBERS.map(m=>({
+    name:m,
+    count:isAtt?events.filter(e=>e.present.includes(m)).length:events.filter(e=>e.host===m).length
+  })).sort((a,b)=>b.count-a.count);
+  const max = sorted[0]?.count||1;
+  const RE=['🥇','🥈','🥉'],RC=['g','s','b'];
+  document.getElementById(key).innerHTML = sorted.map((m,i)=>{
+    const pct=total?Math.round((m.count/total)*100):0;
+    const bc=i===0?'var(--gold)':i===1?'#c0c0c0':i===2?'#cd7f32':isAtt?'var(--accent)':'var(--green)';
+    const label=isAtt?`${m.count}/${total}`:`${m.count} פעמים`;
     return `<div class="lb-item" style="animation-delay:${i*.04}s">
       <div class="rank ${RC[i]||''}">${RE[i]||(i+1)}</div>
       <div style="flex:1"><div class="lb-name">${m.name}</div>
@@ -324,100 +376,91 @@ function renderLb(events, type) {
 function renderNotes(events) {
   const notes = events.filter(e=>e.note);
   document.getElementById('notes-list').innerHTML = notes.length
-    ? notes.map((e,i) => {
-        const d = new Date(e.date+'T00:00:00');
-        const fmt = d.toLocaleDateString('he-IL',{day:'numeric',month:'long'});
-        return `<div class="note-item" style="animation-delay:${i*.04}s">
-          <div class="note-date">${fmt} · ${e.host||'ערב ללא מארח'}</div>
-          <div>${e.note}</div>
-        </div>`;
+    ? notes.map((e,i)=>{
+        const d=new Date(e.date+'T00:00:00');
+        const fmt=d.toLocaleDateString('he-IL',{day:'numeric',month:'long'});
+        return `<div class="note-item" style="animation-delay:${i*.04}s"><div class="note-date">${fmt} · ${e.host||'ערב ללא מארח'}</div><div>${e.note}</div></div>`;
       }).join('')
     : '<div class="empty"><div class="empty-icon">💬</div><div class="empty-text">אין ציטוטים עדיין</div></div>';
 }
 
 // ── Admin ───────────────────────────────────────
 function openAdmin() {
-  if (isAdmin) { switchTab('admin'); return; }
-  document.getElementById('modal').style.display = 'flex';
-  document.getElementById('pwd-input').value = '';
-  document.getElementById('pwd-err').textContent = '';
+  if(isAdmin){switchTab('admin');return;}
+  document.getElementById('modal').style.display='flex';
+  document.getElementById('pwd-input').value='';
+  document.getElementById('pwd-err').textContent='';
   setTimeout(()=>document.getElementById('pwd-input').focus(),100);
 }
-function closeModal() { document.getElementById('modal').style.display='none'; }
-function checkPwd() {
-  if (document.getElementById('pwd-input').value === ADMIN_PASSWORD) {
-    isAdmin = true;
-    closeModal();
-    buildAdminForm();
-    switchTab('admin');
-    showToast('✅ ברוך הבא, מנהל!');
+function closeModal(){document.getElementById('modal').style.display='none';}
+function checkPwd(){
+  if(document.getElementById('pwd-input').value===ADMIN_PASSWORD){
+    isAdmin=true; closeModal(); buildAdminForm(); switchTab('admin'); showToast('✅ ברוך הבא, מנהל!');
   } else {
-    document.getElementById('pwd-err').textContent = '❌ סיסמה שגויה';
-    document.getElementById('pwd-input').value = '';
+    document.getElementById('pwd-err').textContent='❌ סיסמה שגויה';
+    document.getElementById('pwd-input').value='';
     document.getElementById('pwd-input').focus();
   }
 }
-function lockAdmin() { isAdmin=false; switchTab('events'); showToast('🔒 מצב עריכה ננעל'); }
+function lockAdmin(){isAdmin=false;switchTab('events');showToast('🔒 מצב עריכה ננעל');}
 
-function buildAdminForm() {
-  const sel = document.getElementById('new-host');
-  sel.innerHTML = '<option value="">— ללא מארח —</option>';
-  ALL_MEMBERS.forEach(m => sel.innerHTML += `<option value="${m}">${m}</option>`);
-  document.getElementById('new-date').value = new Date().toISOString().split('T')[0];
-  document.getElementById('members-grid').innerHTML = ALL_MEMBERS.map(m =>
+function buildAdminForm(){
+  const sel=document.getElementById('new-host');
+  sel.innerHTML='<option value="">— ללא מארח —</option>';
+  ALL_MEMBERS.forEach(m=>sel.innerHTML+=`<option value="${m}">${m}</option>`);
+  document.getElementById('new-date').value=new Date().toISOString().split('T')[0];
+  document.getElementById('members-grid').innerHTML=ALL_MEMBERS.map(m=>
     `<div class="member-toggle on" id="mt-${m}" onclick="this.classList.toggle('on')">${m}</div>`).join('');
 }
 
-function selectAll(v) {
-  ALL_MEMBERS.forEach(m => { const el=document.getElementById('mt-'+m); if(el) v?el.classList.add('on'):el.classList.remove('on'); });
+function selectAll(v){
+  ALL_MEMBERS.forEach(m=>{const el=document.getElementById('mt-'+m);if(el)v?el.classList.add('on'):el.classList.remove('on');});
 }
 
-function addEvent() {
-  const date = document.getElementById('new-date').value;
-  const host = document.getElementById('new-host').value;
-  const note = document.getElementById('new-note').value.trim();
-  if (!date) { showToast('⚠️ נא לבחור תאריך',true); return; }
-  const present = ALL_MEMBERS.filter(m => document.getElementById('mt-'+m)?.classList.contains('on'));
-  if (!present.length) { showToast('⚠️ סמן לפחות חבר אחד',true); return; }
-  const extra = getExtraEvents();
-  extra.push({ id:'u'+Date.now(), date, host, present, note });
-  saveExtraEvents(extra);
+async function addEvent(){
+  const date=document.getElementById('new-date').value;
+  const host=document.getElementById('new-host').value;
+  const note=document.getElementById('new-note').value.trim();
+  if(!date){showToast('⚠️ נא לבחור תאריך',true);return;}
+  const present=ALL_MEMBERS.filter(m=>document.getElementById('mt-'+m)?.classList.contains('on'));
+  if(!present.length){showToast('⚠️ סמן לפחות חבר אחד',true);return;}
+  const ev={id:'u'+Date.now(),date,host,present,note};
+  cloudEvents.push(ev);
+  renderAll();
   document.getElementById('new-note').value='';
   document.getElementById('new-host').value='';
   document.getElementById('new-date').value=new Date().toISOString().split('T')[0];
   selectAll(true);
-  renderAll();
-  showToast('✅ הערב נשמר!');
+  await saveToCloud(cloudEvents);
 }
 
-function deleteLastEvent() {
-  const extra = getExtraEvents();
-  if (!extra.length) { showToast('⚠️ אין ערבים שנוספו ידנית',true); return; }
-  if (!confirm('למחוק את הערב האחרון שנוסף?')) return;
-  extra.pop();
-  saveExtraEvents(extra);
+async function deleteLastEvent(){
+  if(!cloudEvents.length){showToast('⚠️ אין ערבים שנוספו',true);return;}
+  if(!confirm('למחוק את הערב האחרון שנוסף?'))return;
+  cloudEvents.pop();
   renderAll();
-  showToast('🗑️ הערב נמחק');
+  await saveToCloud(cloudEvents);
 }
 
 // ── Tabs ────────────────────────────────────────
-function switchTab(t) {
+function switchTab(t){
   document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
   document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
   document.getElementById('section-'+t).classList.add('active');
   ['events','attendance','hosting','notes','admin'].forEach((n,i)=>{
-    if(n===t) document.querySelectorAll('.tab')[i]?.classList.add('active');
+    if(n===t)document.querySelectorAll('.tab')[i]?.classList.add('active');
   });
 }
 
-// ── Toast ───────────────────────────────────────
+// ── Toast ────────────────────────────────────────
 function showToast(msg,err=false){
   const t=document.getElementById('toast');
-  t.textContent=msg; t.className='toast'+(err?' err':'')+' show';
+  t.textContent=msg;t.className='toast'+(err?' err':'')+' show';
   setTimeout(()=>t.classList.remove('show'),2600);
 }
 
-renderAll();
+// ── Init ─────────────────────────────────────────
+loadFromCloud();
 </script>
 </body>
 </html>
